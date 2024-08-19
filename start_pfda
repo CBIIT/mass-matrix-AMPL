@@ -2,8 +2,13 @@
 set -ex
 
 # Git repo
+AMPL_DIR=AMPL/
+if [ -d $AMPL_DIR ];
+then
+  rm -rf $AMPL_DIR
+fi
 git clone https://github.com/mass-matrix/AMPL
-cd AMPL/
+cd $AMPL_DIR
 
 # Get config file
 yes | pfda download .env || true
