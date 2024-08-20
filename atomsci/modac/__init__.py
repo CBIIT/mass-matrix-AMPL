@@ -180,7 +180,8 @@ class MoDaCClient:
         :param data_file_path: Path to the data file on the local filesystem.
         :param attributes_file: JSON-like dictionary containing metadata about the data file.
         """
-        url = "/".join((self.BASE_URL, "v2", "dataObject", collection_path))
+        file_name = os.path.basename(data_file_path)
+        url = "/".join((self.BASE_URL, "v2", "dataObject", collection_path, file_name))
 
         if attributes_file is None:
             attributes_file = {}
