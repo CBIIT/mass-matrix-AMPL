@@ -1,3 +1,4 @@
+import json
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -102,6 +103,78 @@ class TestMoDaCClient(unittest.TestCase):
             mock_get.assert_called_once_with(f"{client.BASE_URL}/authenticate", auth={})
 
         self.assertIn("Authentication failed: 502", str(context.exception))
+
+    @patch("atomsci.modac.requests.put")
+    @patch("atomsci.modac.MoDaCClient._login_headers", return_value={})
+    @patch(
+        "builtins.open", new_callable=unittest.mock.mock_open, read_data=b"file content"
+    )
+    @patch.object(MoDaCClient, "authenticate", return_value=True)
+    def test_upload_file_success(
+        self, mock_authenticate, mock_open, mock_token_headers, mock_put
+    ):
+        client = MoDaCClient()
+
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.return_value = None
+        mock_resp.json.return_value = {"status": "success"}
+        mock_put.return_value = mock_resp
+
+        result = client.upload_file("mock_collection", "mock_data_file.txt")
+
+        self.assertTrue(result)
+        mock_put.assert_called_once()
+        mock_open.assert_called_once_with("mock_data_file.txt", "rb")
+
+    @patch("atomsci.modac.requests.put")
+    @patch("atomsci.modac.MoDaCClient._login_headers", return_value={})
+    @patch(
+        "builtins.open", new_callable=unittest.mock.mock_open, read_data=b"file content"
+    )
+    @patch.object(MoDaCClient, "authenticate", return_value=True)
+    def test_upload_file_with_attributes(
+        self, mock_authenticate, mock_open, mock_token_headers, mock_put
+    ):
+        client = MoDaCClient()
+
+        mock_resp = MagicMock()
+        mock_resp.raise_for_status.return_value = None
+        mock_resp.json.return_value = {"status": "success"}
+        mock_put.return_value = mock_resp
+
+        attributes = {"attribute1": "value1", "attribute2": "value2"}
+
+        result = client.upload_file(
+            "mock_collection", "mock_data_file.txt", attributes_file=attributes
+        )
+
+        self.assertTrue(result)
+        mock_put.assert_called_once()
+        mock_open.assert_called_once_with("mock_data_file.txt", "rb")
+
+        called_files = mock_put.call_args[1]["files"]
+        self.assertIn("dataObjectRegistration", called_files)
+        self.assertEqual(
+            json.loads(called_files["dataObjectRegistration"][1]), attributes
+        )
+
+    @patch("atomsci.modac.requests.put")
+    @patch(
+        "builtins.open", new_callable=unittest.mock.mock_open, read_data=b"file content"
+    )
+    @patch.object(MoDaCClient, "authenticate", return_value=True)
+    def test_upload_file_failure(self, mock_authenticate, mock_open, mock_put):
+        client = MoDaCClient()
+
+        mock_put.side_effect = requests.exceptions.HTTPError(
+            "Bad request", response=MagicMock(status_code=400)
+        )
+
+        with self.assertRaises(requests.exceptions.HTTPError):
+            client.upload_file("mock_collection", "mock_data_file.txt")
+
+        mock_put.assert_called_once()
+        mock_open.assert_called_once_with("mock_data_file.txt", "rb")
 
 
 if __name__ == "__main__":
