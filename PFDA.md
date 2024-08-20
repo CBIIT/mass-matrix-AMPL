@@ -31,9 +31,11 @@ export MODAC_PASS=my-modac-pass         # Password to https://modac.cancer.gov/
 
 4. Wait for the Workstation to start. It takes a few minutes for it to reach the `Running` state. Click on `Open Workstation`.
 
-5. Run the `./start_pfda` command
+5. Run the `./start` command
 
 ![Run start_pfda](https://imgur.com/pAh8GQG.png)
+
+**_Note:_** The start command can take ~5m to run, depending on which instance type is used. The GPU docker image is approx 8GB so it will take longer.
 
 6. Copy the Jupyter Notebook URL
 
