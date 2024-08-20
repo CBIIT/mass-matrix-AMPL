@@ -1,5 +1,10 @@
 #!/bin/bash
+# This script starts AMPL on PrecisionFDA (pFDA). It comes preloaded onto the snapshot so that it can be run by typing `./start`
+# Note: This file is re-named to `start` inside the pFDA Snapshot.
+# This remains `start_pfda` to avoid ambiguoity between starting AMPL vs starting AMPL on pFDA
 set -ex
+
+HOST=$DX_JOB_ID.dnanexus.cloud
 
 # Git repo
 AMPL_DIR=AMPL/
@@ -15,6 +20,6 @@ yes | pfda download .env || true
 . .env
 
 # Docker
-pfda download "ampl-${PLATFORM}-${ENV}.tar.gz" .
+pfda download "ampl-${PLATFORM}-${ENV}.tar.gz" -space-id 719
 make load-docker
-make jupyter-notebook
+make jupyter-notebook host=$HOST

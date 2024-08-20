@@ -41,7 +41,7 @@ save-docker:
 # Build Docker image
 build-docker:
 	@echo "Building Docker image for $(PLATFORM)"
-	docker build -t $(IMAGE_REPO):$(PLATFORM)-$(ENV) --build-arg ENV=$(ENV) -f Dockerfile.$(PLATFORM) .
+	docker buildx build -t $(IMAGE_REPO):$(PLATFORM)-$(ENV) --build-arg ENV=$(ENV) --platform linux/amd64 -f Dockerfile.$(PLATFORM) .
 
 install: install-system
 
@@ -63,9 +63,18 @@ install-venv:
 # Run Jupyter Notebook
 jupyter-notebook:
 	@echo "Starting Jupyter Notebook"
+ifdef host
+	docker run -p $(JUPYTER_PORT):$(JUPYTER_PORT) \
+		--hostname $(host) \
+		--privileged \
+		-v $(shell pwd)/../$(WORK_DIR):/$(WORK_DIR) $(IMAGE_REPO):$(PLATFORM)-$(ENV) \
+		/bin/bash -l -c "jupyter-notebook --ip=0.0.0.0 --no-browser --allow-root --port=$(JUPYTER_PORT)"
+else
 	docker run -p $(JUPYTER_PORT):$(JUPYTER_PORT) \
 		-v $(shell pwd)/../$(WORK_DIR):/$(WORK_DIR) $(IMAGE_REPO):$(PLATFORM)-$(ENV) \
 		/bin/bash -l -c "jupyter-notebook --ip=0.0.0.0 --no-browser --allow-root --port=$(JUPYTER_PORT)"
+endif
+
 
 # Run Jupyter Lab
 jupyter-lab:
