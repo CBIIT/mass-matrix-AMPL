@@ -1,13 +1,12 @@
 bokeh
-bravado
 ipykernel
 jupyter
 maestrowf
 matplotlib
 matplotlib-venn
-MolVS
-mordred
 pytest
+pytest-cov
+pytest-xdist
 ruff
 seaborn>=0.13.0
 umap-learn

@@ -1,3 +1,6 @@
+# Architecture
+ARCH ?= linux/amd64
+
 # Environment
 ENV ?= dev
 
@@ -32,7 +35,7 @@ pull-docker:
 
 # Push Docker image
 push-docker:
-	docker push $(IMAGE_REPO):$(PLATFORM)-$(ENV)
+	docker buildx build -t $(IMAGE_REPO):$(PLATFORM)-$(ENV) --build-arg ENV=$(ENV) --platform $(ARCH) --push -f Dockerfile.$(PLATFORM) .
 
 # Save Docker image
 save-docker:
@@ -41,7 +44,7 @@ save-docker:
 # Build Docker image
 build-docker:
 	@echo "Building Docker image for $(PLATFORM)"
-	docker buildx build -t $(IMAGE_REPO):$(PLATFORM)-$(ENV) --build-arg ENV=$(ENV) --platform linux/amd64 -f Dockerfile.$(PLATFORM) .
+	docker buildx build -t $(IMAGE_REPO):$(PLATFORM)-$(ENV) --build-arg ENV=$(ENV) --platform $(ARCH) --load -f Dockerfile.$(PLATFORM) .
 
 install: install-system
 
@@ -84,11 +87,17 @@ jupyter-lab:
 		/bin/bash -l -c "jupyter-lab --ip=0.0.0.0 --allow-root --port=$(JUPYTER_PORT)"
 
 # Run pytest
-pytest:
-	@echo "Running pytest"
-	docker run -p $(JUPYTER_PORT):$(JUPYTER_PORT) \
-		-v $(shell pwd)/$(WORK_DIR):/$(WORK_DIR) $(IMAGE_REPO):$(PLATFORM)-$(ENV) \
-		/bin/bash -l -c "pytest"
+pytest: pytest-unit pytest-integrative
+
+pytest-integrative:
+	@echo "Running integrative tests"
+	docker run -v $(shell pwd)/$(WORK_DIR):/$(WORK_DIR) $(IMAGE_REPO):$(PLATFORM)-$(ENV) \
+			/bin/bash -l -c "cd atomsci/ddm/test/integrative && ./integrative_batch_tests.sh"
+
+pytest-unit:
+	@echo "Running unit tests"
+	docker run -v $(shell pwd)/$(WORK_DIR):/$(WORK_DIR) $(IMAGE_REPO):$(PLATFORM)-$(ENV) \
+			/bin/bash -l -c "cd atomsci/ddm/test/unit && python3.9 -m pytest -n $(shell nproc) --capture=sys --capture=fd --cov=atomsci/ -vv"
 
 # Run ruff linter
 ruff:
