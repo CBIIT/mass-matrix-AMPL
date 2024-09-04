@@ -2,24 +2,35 @@
 # This script starts AMPL on PrecisionFDA (pFDA). It comes preloaded onto the snapshot so that it can be run by typing `./start`
 # Note: This file is re-named to `start` inside the pFDA Snapshot.
 # This remains `start_pfda` to avoid ambiguoity between starting AMPL vs starting AMPL on pFDA
-set -ex
+set -e
 
 HOST=$DX_JOB_ID.dnanexus.cloud
+
+# Get config file
+echo "=> Loading configuration..."
+# yes | pfda download .env || true
+. .env
+echo "=> Done"
+echo "=> Please update the .env file with any specific configuration"
+echo "=> After updating .env, you must run \`. .env\` to reload the variables to your environment"
 
 # Git repo
 AMPL_DIR=AMPL/
 if [ -d $AMPL_DIR ];
 then
+  echo "=> Existing AMPL repository detected. Removing..."
   rm -rf $AMPL_DIR
+  echo "=> Done"
 fi
+echo "=> Cloning AMPL repository..."
 git clone https://github.com/mass-matrix/AMPL
 cd $AMPL_DIR
-
-# Get config file
-yes | pfda download .env || true
-. .env
+echo "=> Done"
 
 # Docker
+echo "=> Downloading AMPL Image..."
 pfda download "ampl-${PLATFORM}-${ENV}.tar.gz" -space-id 719
 make load-docker
+echo "=> Done"
+
 make jupyter-notebook host=$HOST
