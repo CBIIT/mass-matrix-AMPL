@@ -8,50 +8,35 @@
 
 ## Running Jupyter Notebook
 
-1. Create .env file with the following configuration:
+1. Launch the `pfda-ttyd` Workstation (located in Featured). In order to access the snapshot, select `AMPL on pFDA` for the context:
 
-```shell
-export ENV=1.6.1                        # Any published version tag
-export IMAGE_REPO=atomsci/atomsci-ampl  # Name of the dockerhub repository
-export JUPYTER_PORT=8080                # Port 8080 is open by default on pFDA
-export PLATFORM=cpu                     # Can be cpu / gpu
-export WORK_DIR=work/                   # Working directory to use
-export MODAC_USER=my-modac-username     # Username to https://modac.cancer.gov/
-export MODAC_PASS=my-modac-pass         # Password to https://modac.cancer.gov/
-```
+![Select pfda-ttyd Workstation](./img/select-pfda-ttyd-workstation.png)
+![Select Context](./img/select-context.png)
+![Load Snapshot](./img/load-snapshot.png)
 
-2. Upload this to your Files section:
+2. Wait for the Workstation to start. It takes a few minutes for it to reach the `Running` state. Click on `Open Workstation`.
 
-![.env](https://i.imgur.com/Jw8BLVp.png)
+3. Update `.env` with any configuration you need to adjust.
 
-3. Launch the `pfda-ttyd` Workstation (located in Featured) with the latest `pfda-ttyd-ampl` snapshot
+4. Run the `./start` command
 
-![Select pfda-ttyd Workstation](https://i.imgur.com/AOKH9dZ.png)
-![Load Snapshot](https://i.imgur.com/xoveFH2.png)
-
-4. Wait for the Workstation to start. It takes a few minutes for it to reach the `Running` state. Click on `Open Workstation`.
-
-5. Run the `./start` command
-
-![Run start_pfda](https://imgur.com/pAh8GQG.png)
+![Run start](./img/run-start.png)
 
 **_Note:_** The start command can take ~5m to run, depending on which instance type is used. The GPU docker image is approx 8GB so it will take longer.
 
-6. Copy the Jupyter Notebook URL
+5. Copy the Jupyter Notebook URL. There are 2 URLs. Copy the one which has the pfda job-id host. This is the hostname which will be accessible by your current pFDA login session. Be sure to change `http` --> `https`. Enter this into the browser URL.
 
-![Jupyter Notebook](https://i.imgur.com/PuXkrmx.png)
+![Jupyter Notebook](./img/jupyter-notebook.png)
 
-7. Replace `127.0.0.1` with the workstation host and add `:8080` to the end. Enter this into the browser URL.
-
-**_Note:_** The Precision FDA Environment has a very short lived session. If you have a slow network connection, you may be logged out before the
+**_Note:_** The Precision FDA Environment has a very short lived session. If you have a slow network connection, you may be logged out before the docker images are downloaded
 
 ## Importing Existing Models
 
-There are a couple options for importing an pre-trained model. Most models come in the form of a `.tar.gz`. The first steps will be to create a workstation using the instruction above. Once this workstation is running, and open (Step 4), proceed as follows:
+There are a couple options for importing an pre-trained model. Most models come in the form of a `.tar.gz`. The first steps will be to create a workstation using the instruction above, with the one optional inital step to copy the snapshot into your own Space. You only need to copy the snapshot if your pre-trained models exist in your own space. The goal is the have the files located in the same Space for ease of downloading. Once this workstation is running, proceed as follows:
 
 1. Upload trained models to pFDA using the Files interface. Click on the `Add Files` button and follow the dialog to upload to pFDA.
 
-![Pre-trained model example](https://i.imgur.com/W7rfzaD.png)
+![Pre-trained model example](./img/pre-trained-model-example.png)
 
 2. In the Workstation tab, cd into a directory called `work/` by running the following:
 
@@ -59,7 +44,7 @@ There are a couple options for importing an pre-trained model. Most models come 
 cd work
 ```
 
-![mkdir command](https://i.imgur.com/4Xq9WPc.png)
+![mkdir command](./img/mkdir-command.png)
 
 3. Download the model to the Workstation inside the `work/` directory, and return to the home directory
 
@@ -68,7 +53,7 @@ pfda download <name_of_model.tar.gz>
 cd ..
 ```
 
-![pfda download command](https://i.imgur.com/lvbYRRi.png)
+![pfda download command](./img/pfda-download-command.png)
 
 4. Continue from Step 5 above to run your notebook
 
@@ -85,7 +70,7 @@ There are 2 scripts which are used to help with installing and running AMPL on p
 
 ## Re-attaching to a running Workstation
 
-![Getting Logged Out](https://imgur.com/UqxlHay.png)
+![Getting Logged Out](./img/getting-logged-out.png)
 
 PrecisionFDA has a very short lived session. If you get logged out at any point, you should be able to login again and attach to your Workstation.
 
@@ -99,7 +84,8 @@ docker ps
 ```
 
 5.  If your output shows no running containers, it will look like this:
-    ![No Running Containers](https://imgur.com/I7qNx2K.png)
+
+![No Running Containers](./img/no-running-containers.png)
 
 You can restart the notebook by running
 
@@ -109,10 +95,10 @@ cd AMPL/
 make jupyter-notebook
 ```
 
-![Restarting Jupyter Notebook](https://imgur.com/WV41mJq.png)
+![Restarting Jupyter Notebook](./img/restarting-jupyter-notebook.png)
 
 Otherwise if you have a running container, your `docker ps` output will look something like this:
-![Running container](https://imgur.com/noyeNUM.png)
+![Running container](./img/running-container.png)
 
 Then we can simply output the logs from it by running the following:
 docker logs:
@@ -122,4 +108,4 @@ docker logs $(docker ps -q)
 ```
 
 From here we can copy the URL for the Jupyter Notebook
-![Get connection information for running container](https://imgur.com/DKz11Ri.png)
+![Get connection information for running container](./img/get-connection-information-for-running-container.png)
