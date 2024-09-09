@@ -8,10 +8,27 @@ endif
 # Environment
 ENV ?= dev
 
-# GPU / CPU
-PLATFORM ?= gpu
+# GPU / CPU, default is CPU
+PLATFORM ?= cpu
 ifeq ($(PLATFORM), gpu)
     GPU_ARG = --gpus all
+endif
+
+# define subtag. used for push
+ifneq ($(ARCH),)
+    SUBTAG = arm
+else
+    SUBTAG = $(PLATFORM)
+endif
+
+# Release version
+VERSION=$(shell cat VERSION)
+
+# If ENV is from master branch, we use VERSION for the tag, otherwise use PLATFORM
+ifeq ($(ENV), master)
+    TAG = v$(VERSION)-$(SUBTAG)
+else
+    TAG = $(PLATFORM)-$(ENV)
 endif
 
 # IMAGE REPOSITORY
@@ -38,11 +55,11 @@ load-docker:
 
 # Pull Docker image
 pull-docker:
-	docker pull $(IMAGE_REPO):$(PLATFORM)-$(ENV)
+	docker pull $(IMAGE_REPO):$(TAG)
 
 # Push Docker image
 push-docker:
-	docker buildx build -t $(IMAGE_REPO):$(PLATFORM)-$(ENV) --build-arg ENV=$(ENV) $(PLATFORM_ARG) --push -f Dockerfile.$(PLATFORM) .
+	docker buildx build --no-cache -t $(IMAGE_REPO):$(TAG) -t $(IMAGE_REPO):latest-$(SUBTAG) --build-arg ENV=$(ENV) $(PLATFORM_ARG) --push -f Dockerfile.$(PLATFORM) .
 
 # Save Docker image
 save-docker:
