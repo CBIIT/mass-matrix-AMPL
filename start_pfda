@@ -28,8 +28,14 @@ cd $AMPL_DIR
 echo "=> Done"
 
 # Docker
-echo "=> Downloading AMPL Image..."
-pfda download "ampl-${PLATFORM}-${ENV}.tar.gz" -space-id 719
+IMAGE="ampl-${ENV}-${PLATFORM}.tar.gz"
+echo "=> Downloading AMPL Image ($IMAGE)..."
+if [ -f $IMAGE ];
+then
+  echo "$IMAGE exists locally"
+else
+  pfda download $IMAGE -space-id 719
+fi
 make load-docker
 echo "=> Done"
 
