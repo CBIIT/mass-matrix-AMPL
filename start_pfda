@@ -1,14 +1,24 @@
 #!/bin/bash
 # This script starts AMPL on PrecisionFDA (pFDA). It comes preloaded onto the snapshot so that it can be run by typing `./start`
 # Note: This file is re-named to `start` inside the pFDA Snapshot.
-# This remains `start_pfda` to avoid ambiguoity between starting AMPL vs starting AMPL on pFDA
+# This remains `start_pfda` to avoid ambiguity between starting AMPL vs starting AMPL on pFDA
 set -e
 
 HOST=$DX_JOB_ID.dnanexus.cloud
+SPACE_ID=719
+
+function DownloadImageFromDockerHub() {
+    local image=$1
+    local space_id=$2
+    echo "=> Downloading image from DockerHub..."
+    make pull-docker save-docker
+    echo "=> Uploading image $image to Space-$space_id"
+    pfda upload-file $image -space-id $space_id
+    echo "=> Done with DockerHub image download and upload."
+}
 
 # Get config file
 echo "=> Loading configuration..."
-# yes | pfda download .env || true
 . .env
 echo "=> Done"
 echo "=> Please update the .env file with any specific configuration"
@@ -16,8 +26,7 @@ echo "=> After updating .env, you must run \`. .env\` to reload the variables to
 
 # Git repo
 AMPL_DIR=AMPL/
-if [ -d $AMPL_DIR ];
-then
+if [ -d $AMPL_DIR ]; then
   echo "=> Existing AMPL repository detected. Removing..."
   rm -rf $AMPL_DIR
   echo "=> Done"
@@ -30,11 +39,18 @@ echo "=> Done"
 # Docker
 IMAGE="ampl-${ENV}-${PLATFORM}.tar.gz"
 echo "=> Downloading AMPL Image ($IMAGE)..."
-if [ -f $IMAGE ];
-then
+if [ -f $IMAGE ]; then
   echo "$IMAGE exists locally"
 else
-  pfda download $IMAGE -space-id 719
+  set +e  # Disable exit on error for the download command
+  pfda download $IMAGE -space-id $SPACE_ID
+  retVal=$?
+  set -e  # Re-enable exit on error
+  if [ $retVal -ne 0 ]; then
+      echo "=> Could not find image on PrecisionFDA. Attempting to download from DockerHub and upload image $IMAGE to Space-$SPACE_ID.."
+      DownloadImageFromDockerHub "$IMAGE" "$SPACE_ID"
+      echo "=> Done"
+  fi
 fi
 make load-docker
 echo "=> Done"
