@@ -109,3 +109,24 @@ docker logs $(docker ps -q)
 
 From here we can copy the URL for the Jupyter Notebook
 ![Get connection information for running container](./img/get-connection-information-for-running-container.png)
+
+## Creating a new snapshot
+
+In order to provide a better user experience, there are snapshots which are meant to target specific versions of AMPL. To create a new snapshot, you can do the following:
+
+1. Launch a Workstation using the latest dev snapshot
+2. Edit the `.env` file using a text editor called `vi`
+
+![Launch Vim](./img/edit-env.png)
+
+For more information on how to use Vim, see this basic tutorial: https://www.geeksforgeeks.org/basic-vim-commands/
+
+3. Edit the ENV variable to be whichever version you'd like to snapshot.
+
+![Edit variable](./img/edit-var.png)
+
+You may need to type `i` to enter interactive mode.
+
+4. Save you changes. To save your work, You can push `Escape` to exit interactive mode. Then you can type `:wq` to write and quit.
+
+5. In the pFDA console, click on snapshot. Name the snapshot according to the existing naming conventions
